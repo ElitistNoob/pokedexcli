@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
+	"time"
+
+	cache "github.com/ElitistNoob/pokedexcli/internal/pokecache"
 )
 
-var BASE_ENDPOINT = "https://pokeapi.co/api/v2/location-area"
+var pkCache = cache.NewCache(5 * time.Minute)
 
 func commandMap(cfg *config) error {
-	res, err := cfg.apiClient.GetLocations(cfg.next)
+	res, err := cfg.apiClient.GetLocations(cfg.next, pkCache)
 	if err != nil {
-		return fmt.Errorf("error: %v", err)
+		return err
 	}
 
 	cfg.next = res.Next
@@ -28,9 +31,9 @@ func commandMapBack(cfg *config) error {
 		return nil
 	}
 
-	res, err := cfg.apiClient.GetLocations(cfg.previous)
+	res, err := cfg.apiClient.GetLocations(cfg.previous, pkCache)
 	if err != nil {
-		return fmt.Errorf("error: %v", err)
+		return err
 	}
 
 	cfg.next = res.Next
