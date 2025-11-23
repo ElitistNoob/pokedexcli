@@ -30,7 +30,12 @@ func startRepl(cfg *config) {
 			continue
 		}
 
-		if err := cmd.callback(cfg); err != nil {
+		var arg *string
+		if len(words) > 1 {
+			arg = &words[1]
+		}
+
+		if err := cmd.callback(cfg, arg); err != nil {
 			fmt.Printf("Error: %v", err)
 			continue
 		}
@@ -43,8 +48,14 @@ func cleanInput(text string) []string {
 	return list
 }
 
+type pokedex struct {
+	pokemons map[string]api.Pokemon
+	count    int
+}
+
 type config struct {
 	apiClient api.Client
+	pokedex   pokedex
 	next      *string
 	previous  *string
 }
@@ -52,7 +63,7 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(cfg *config) error
+	callback    func(cfg *config, arg *string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -76,6 +87,26 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Displays the previous 20 locations within the Pokemon world",
 			callback:    commandMapBack,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Displays pokemon the searched area",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Attempts to catch a pokemon",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Display caught pokemon's stats",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display all pokemon in your pokedex",
+			callback:    commandPokedex,
 		},
 	}
 }
